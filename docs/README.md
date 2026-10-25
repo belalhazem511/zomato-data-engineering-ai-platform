@@ -1,0 +1,14 @@
+# Documentation
+
+- [Architecture](architecture.md)
+- [Data pipeline](data-pipeline.md)
+- [Snowflake setup](snowflake-setup.md)
+- [dbt models](dbt-models.md)
+- [Airflow orchestration](airflow-orchestration.md)
+- [AI enrichment](ai-enrichment.md)
+- [RAG assistant](rag-assistant.md)
+- [Text-to-SQL](text-to-sql.md)
+- [Local development](local-development.md)
+- [Security](security.md)
+- [Troubleshooting](troubleshooting.md)
+- [Roadmap](roadmap.md)
