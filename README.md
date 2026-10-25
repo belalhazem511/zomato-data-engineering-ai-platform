@@ -186,4 +186,4 @@ The core Airflow/dbt/Snowflake pipeline and Docker-based sentiment enrichment ha
 
 ## License
 
-The license is intentionally pending confirmation of code ownership and the approved copyright holder. Third-party datasets, pretrained model weights, libraries, and external assets remain subject to their own licenses.
+Original source code is licensed under the [MIT License](LICENSE), Copyright (c) 2026 Belal Hazem. Third-party datasets, pretrained model weights, libraries, and external assets remain subject to their own licenses and attribution requirements.
