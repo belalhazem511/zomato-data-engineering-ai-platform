@@ -7,22 +7,27 @@ import requests
 import streamlit as st
 import snowflake.connector
 from dotenv import load_dotenv
-from sqlglot import parse, exp
+
+try:
+    from .text_to_sql_validation import (
+        schema_prompt,
+        required_read_only_role,
+        bounded_query,
+        validate_sql,
+    )
+except ImportError:
+    from text_to_sql_validation import (
+        schema_prompt,
+        required_read_only_role,
+        bounded_query,
+        validate_sql,
+    )
 
 load_dotenv()
 
 MODEL = "qwen2.5:1.5b"
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MAX_ROWS = 100
-
-ALLOWED_TABLES = {
-    "FCT_ORDERS",
-    "DIM_RESTAURANT",
-    "DIM_CUSTOMER",
-    "MART_DAILY_CITY_REVENUNE",
-    "MART_RESTAURANT_PERFORMANCE",
-    "MART_DELIVERY_SLA",
-}
 
 EXAMPLE_QUESTIONS = [
     "Top 10 cities by GMV",
@@ -31,51 +36,7 @@ EXAMPLE_QUESTIONS = [
     "Cancel rate by payment method",
 ]
 
-SCHEMA = """
-Snowflake tables available in the MARTS schema:
-
-FCT_ORDERS(
-    order_id, order_date, customer_id,
-    restaurant_id, city, cuisine,
-    payment_method, order_status,
-    is_delivered, sales_amount,
-    discount, delivery_fee, gst,
-    customer_rating, delivery_time_min
-)
-
-DIM_RESTAURANT(
-    restaurant_id, restaurant_name,
-    city, cuisine, rating, cost_for_two
-)
-
-DIM_CUSTOMER(
-    customer_id, customer_name,
-    age, age_segment, gender, city
-)
-
-MART_DAILY_CITY_REVENUNE(
-    order_date, city, orders,
-    cancel_rate, gmv, aov
-)
-
-MART_RESTAURANT_PERFORMANCE(
-    restaurant_id, restaurant_name,
-    city, cuisine, orders, revenue,
-    avg_customer_rating, cancel_rate
-)
-
-MART_DELIVERY_SLA(
-    city, order_hour, delivered_orders,
-    p50_delivery_min, late_rate
-)
-
-Important:
-- GMV means delivered revenue.
-- Prefer MART tables when appropriate.
-- Use only listed tables and columns.
-- Tables are in the current MARTS schema.
-- Use bare table names.
-"""
+SCHEMA = schema_prompt()
 
 SYSTEM_PROMPT = f"""
 You are an expert Snowflake SQL data analyst.
@@ -123,9 +84,7 @@ def get_connection():
             "SNOWFLAKE_DATABASE", "ZOMATO"
         ),
         schema="MARTS",
-        role=os.getenv(
-            "SNOWFLAKE_READONLY_ROLE", "DBT_ROLE"
-        ),
+        role=required_read_only_role(),
         session_parameters={
             "STATEMENT_TIMEOUT_IN_SECONDS": 60
         }
@@ -170,93 +129,10 @@ def generate_sql(question):
     return sql.strip().rstrip(";")
 
 
-def validate_sql(sql):
-    if not sql:
-        raise ValueError(
-            "The question cannot be answered "
-            "using the available schema."
-        )
-
-    statements = parse(sql, read="snowflake")
-
-    if len(statements) != 1:
-        raise ValueError(
-            "Only one SQL statement is allowed."
-        )
-
-    tree = statements[0]
-
-    if not isinstance(tree, (exp.Select, exp.Union)):
-        raise ValueError(
-            "Only read-only SELECT queries are allowed."
-        )
-
-    forbidden_types = (
-        exp.Insert,
-        exp.Update,
-        exp.Delete,
-        exp.Drop,
-        exp.Create,
-        exp.Alter,
-        exp.Merge,
-        exp.Command,
-        exp.Into,
-    )
-
-    for node in tree.walk():
-        if isinstance(node, forbidden_types):
-            raise ValueError(
-                "SQL contains a forbidden operation."
-            )
-
-    cte_names = {
-        cte.alias_or_name.upper()
-        for cte in tree.find_all(exp.CTE)
-    }
-
-    tables = list(tree.find_all(exp.Table))
-
-    if not tables:
-        raise ValueError(
-            "SQL must query an approved table."
-        )
-
-    used_approved_table = False
-
-    for table in tables:
-        name = table.name.upper()
-
-        if table.db or table.catalog:
-            raise ValueError(
-                "Qualified table names are not allowed."
-            )
-
-        if name in cte_names:
-            continue
-
-        if name not in ALLOWED_TABLES:
-            raise ValueError(
-                f"Table {name} is not allowed."
-            )
-
-        used_approved_table = True
-
-    if not used_approved_table:
-        raise ValueError(
-            "No approved data table was referenced."
-        )
-
-    return tree.sql(dialect="snowflake")
-
-
 def run_query(sql):
     # Apply a maximum result size,
     # even if the LLM omits LIMIT.
-    limited_sql = f"""
-        SELECT *
-        FROM ({sql}) AS SAFE_RESULT
-        LIMIT {MAX_ROWS}
-    """
+    limited_sql = bounded_query(sql, MAX_ROWS)
 
     conn = get_connection()
     cursor = None
