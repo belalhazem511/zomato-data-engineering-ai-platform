@@ -1,0 +1,2 @@
+# Lightweight dependencies for offline contract and safety tests.
+sqlglot

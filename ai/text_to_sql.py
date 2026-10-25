@@ -12,16 +12,19 @@ try:
     from .text_to_sql_validation import (
         schema_prompt,
         required_read_only_role,
-        bounded_query,
         validate_sql,
     )
 except ImportError:
     from text_to_sql_validation import (
         schema_prompt,
         required_read_only_role,
-        bounded_query,
         validate_sql,
     )
+
+try:
+    from .query_execution import execute_dataframe
+except ImportError:
+    from query_execution import execute_dataframe
 
 load_dotenv()
 
@@ -130,22 +133,8 @@ def generate_sql(question):
 
 
 def run_query(sql):
-    # Apply a maximum result size,
-    # even if the LLM omits LIMIT.
-    limited_sql = bounded_query(sql, MAX_ROWS)
-
     conn = get_connection()
-    cursor = None
-
-    try:
-        cursor = conn.cursor()
-        cursor.execute(limited_sql)
-        return cursor.fetch_pandas_all()
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        conn.close()
+    return execute_dataframe(conn, sql, MAX_ROWS)
 
 
 # ---------------- UI ----------------
