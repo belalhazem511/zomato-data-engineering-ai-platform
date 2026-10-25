@@ -6,6 +6,11 @@ import re
 import snowflake.connector
 from dotenv import load_dotenv
 
+try:
+    from . import complaint_rules
+except ImportError:
+    import complaint_rules
+
 load_dotenv()
 
 MODEL = "cardiffnlp/twitter-roberta-base-sentiment-latest"
@@ -114,78 +119,22 @@ def contains_phrase(text, phrase):
 
 
 def detect_issue(comment, sentiment):
-    if sentiment != "negative":
-        return None, None
-
-    text = str(comment).lower()
-
-    matches = []
-
-    for keywords, issue, topic in ISSUE_RULES:
-        matched_phrases = [
-            keyword
-            for keyword in keywords
-            if contains_phrase(text, keyword)
-        ]
-
-        if matched_phrases:
-            matches.append((
-                max(
-                    len(phrase.split())
-                    for phrase in matched_phrases
-                ),
-                issue,
-                topic
-            ))
-
-    if not matches:
-        return None, None
-
-    # Prefer the most specific matching phrase.
-    matches.sort(
-        key=lambda item: item[0],
-        reverse=True
-    )
-
-    _, issue, topic = matches[0]
-
-    return issue, topic
+    return complaint_rules.detect_issue(comment, sentiment)
 
 
 def find_topic(comment):
-    text = str(comment).lower()
-    scores = {}
-
-    for topic, keywords in TOPIC_KEYWORDS.items():
-        scores[topic] = sum(
-            1
-            for keyword in keywords
-            if contains_phrase(text, keyword)
-        )
-
-    best_topic = max(
-        scores,
-        key=scores.get
-    )
-
-    if scores[best_topic] == 0:
-        return "other"
-
-    return best_topic
+    return complaint_rules.find_topic(comment)
 
 
 def analyze_topic_and_issue(comment, sentiment):
-    issue, issue_topic = detect_issue(
-        comment,
-        sentiment
-    )
+    # Keep the legacy single-label interface while using the isolated rule engine.
+    return complaint_rules.analyze_topic_and_issue(comment, sentiment)
 
-    # When a negative review has a clear issue,
-    # keep topic and issue consistent.
-    if issue is not None:
-        return issue_topic, issue
 
-    return find_topic(comment), None
+def detect_all_issues(comment, sentiment):
+    """Expose optional multi-label issues without changing the Snowflake schema."""
+
+    return complaint_rules.detect_issues(comment, sentiment)
 
 
 def find_key_issue(comment, sentiment):
