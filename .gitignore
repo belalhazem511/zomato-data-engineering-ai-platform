@@ -32,6 +32,8 @@ zomato/logs/
 zomato/target/
 zomato/dbt_packages/
 zomato/.user.yml
+zomato/models/example/
+zomato/**/.gitkeep
 
 # Root-level generated logs and local databases
 logs/
