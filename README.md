@@ -18,6 +18,8 @@ This project turns food-delivery operational data into tested analytical models 
 
 It also includes two Streamlit applications: a semantic review assistant using Sentence Transformers and Ollama, and a natural-language-to-SQL interface that validates generated Snowflake SQL before user-approved execution.
 
+![Zomato Data & AI Architecture](docs/images/zomato-architecture.png)
+
 ## Features and status
 
 - **Cloud ingestion:** Snowflake `COPY INTO` commands read entity files from an S3-backed stage. Implemented in the Airflow DAG.
