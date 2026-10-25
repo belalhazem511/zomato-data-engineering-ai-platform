@@ -1,0 +1,36 @@
+
+name: 'zomato'
+version: '1.0.0'
+
+profile: 'zomato'
+
+# Project directories
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+# Directories removed by dbt clean
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Model configurations
+models:
+  zomato:
+
+    # Disable default dbt example models
+    example:
+      +enabled: false
+
+    # Staging layer
+    staging:
+      +materialized: view
+      +schema: staging
+
+    # Marts layer
+    marts:
+      +materialized: table
+      +schema: marts
