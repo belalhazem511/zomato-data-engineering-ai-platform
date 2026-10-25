@@ -1,0 +1,75 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+!**/.env.example
+creds
+credentials/
+.aws/
+.streamlit/secrets.toml
+
+# Python environments and caches
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Airflow and local runtime state
+airflow/logs/
+airflow/.local/
+airflow/.pytest_cache/
+airflow/.env
+
+# dbt generated state
+zomato/logs/
+zomato/target/
+zomato/dbt_packages/
+zomato/.user.yml
+
+# Root-level generated logs and local databases
+logs/
+*.db
+*.sqlite
+*.sqlite3
+
+# Local AI artifacts and caches
+.cache/
+cache/
+hf_cache/
+/models/
+embeddings/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+
+# Local datasets. Keep only the documented schema guide.
+Data/*.csv
+Data/*.json
+!Data/README.md
+
+# Docker-generated state
+docker-data/
+postgres-data/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.log

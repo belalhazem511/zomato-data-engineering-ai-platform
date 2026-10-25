@@ -1,0 +1,8 @@
+# Dependencies used by the local Streamlit AI applications.
+pandas
+python-dotenv
+requests
+snowflake-connector-python
+sentence-transformers
+sqlglot
+streamlit
