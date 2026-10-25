@@ -26,6 +26,7 @@ It also includes two Streamlit applications: a semantic review assistant using S
 - **Review enrichment:** Local CardiffNLP RoBERTa sentiment classification plus rule-based topics and one key issue per review. Verified in Docker logs with 100 saved reviews.
 - **RAG assistant:** Implemented locally with sampled reviews, normalized MiniLM embeddings, top-five retrieval, and Ollama Qwen2.5. Experimental quality and coverage.
 - **Text-to-SQL:** Implemented locally with Ollama, JSON output, SQLGlot parsing, table allowlisting, result limiting, and user approval. Its configured schema still requires reconciliation with the dbt marts.
+- **Analytics dashboard:** A separate read-only Streamlit dashboard covers executive KPIs, revenue, delivery, customer ordering patterns, and AI review insights using the current MARTS schema.
 
 ## Architecture
 
@@ -72,6 +73,9 @@ flowchart LR
 │   ├── docker-compose.yaml
 │   └── .env.example
 ├── Data/README.md
+├── dashboard/
+│   ├── app.py
+│   └── query_contract.py
 ├── docs/
 ├── zomato/
 │   ├── models/staging/
@@ -157,9 +161,12 @@ ollama pull qwen2.5:3b
 ollama pull qwen2.5:1.5b
 streamlit run ai/rag_chat.py
 streamlit run ai/text_to_sql.py
+streamlit run dashboard/app.py
 ```
 
 The RAG app is evidence-limited by its sampled review set. The Text-to-SQL app must use a dedicated read-only Snowflake role before broader use.
+
+The dashboard uses only fixed read-only queries against existing MARTS and AI relations and also requires `SNOWFLAKE_READONLY_ROLE`.
 
 ## Example questions
 

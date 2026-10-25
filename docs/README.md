@@ -13,3 +13,4 @@
 - [Troubleshooting](troubleshooting.md)
 - [Roadmap](roadmap.md)
 - [Baseline validation](baseline-validation.md)
+- [Dashboard](../dashboard/README.md)
