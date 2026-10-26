@@ -75,3 +75,8 @@ Thumbs.db
 *.temp
 *.bak
 *.log
+
+# Local dashboard deliverables and source assets
+*.pbix
+/Zomato_Analytics_Command_Final.pdf
+/Zomato Data & AI Platform Flow (1).png
