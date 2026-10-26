@@ -1,0 +1,4 @@
+# Lightweight dependencies for offline contract and safety tests.
+numpy
+pandas
+sqlglot
