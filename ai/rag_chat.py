@@ -26,7 +26,7 @@ load_dotenv()
 
 # Configuration
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-CHAT_MODEL = "qwen2.5:3b"
+CHAT_MODEL = "qwen2.5:1.5b"
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
 NEW_REVIEWS = 500

@@ -33,7 +33,10 @@ except ImportError:
     )
 
 
-load_dotenv()
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(dotenv_path=PROJECT_ROOT / "ai" / ".env")
 
 st.set_page_config(
     page_title="Zomato Analytics Dashboard",
